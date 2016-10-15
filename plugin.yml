@@ -1,0 +1,10 @@
+name: SimpleSilkSpawners
+version: 1.0
+main: me.becja10.SimpleSilkSpawners.SimpleSilkSpawners
+softdepend: []
+description: Bare bones plugin to allow spawners to drop when mined with silk touch 
+commands:
+  sssreload:
+    description: reloads the config 
+    usage: /<command>
+  
