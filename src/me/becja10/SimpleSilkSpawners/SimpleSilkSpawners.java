@@ -126,7 +126,7 @@ public class SimpleSilkSpawners extends JavaPlugin implements Listener{
 			try{
 				mob = event.getItemInHand().getItemMeta().getLore().get(0);
 			}
-			catch(IndexOutOfBoundsException e){
+			catch(Exception e){
 				event.setCancelled(true);
 				event.getPlayer().sendMessage(ChatColor.RED + "There is a problem with this spawner. Please contact staff.");
 				return;
