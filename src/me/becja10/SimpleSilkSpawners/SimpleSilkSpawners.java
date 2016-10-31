@@ -40,7 +40,8 @@ public class SimpleSilkSpawners extends JavaPlugin implements Listener{
 	private FileConfiguration outConfig;
 	
 	//Config Settings
-	public ArrayList<World> worlds; private String _worlds = "EnabledWorlds";
+	public ArrayList<World> harvestWorlds; private String _worlds = "EnabledWorlds";
+	public ArrayList<World> disabledWorlds; private String _disabledWorlds = "DisabledWorlds";
 	
 	private void loadConfig(){
 		configPath = this.getDataFolder().getAbsolutePath() + File.separator + "config.yml";
@@ -51,16 +52,30 @@ public class SimpleSilkSpawners extends JavaPlugin implements Listener{
 		if(configWorlds == null)
 			configWorlds = new ArrayList<String>();
 		
-		worlds = new ArrayList<World>();		
+		harvestWorlds = new ArrayList<World>();		
 		for(String cw: configWorlds){
 			World world = getServer().getWorld(cw);
 			if(world == null)
 				logger.warning("There is no world named: " + cw + ". Check your config.yml");
 			else
-				worlds.add(world);			
+				harvestWorlds.add(world);			
+		}
+		
+		List<String> disWorlds = config.getStringList(_disabledWorlds);
+		if(disWorlds == null)
+			disWorlds = new ArrayList<String>();
+		
+		disabledWorlds = new ArrayList<World>();		
+		for(String cw: disWorlds){
+			World world = getServer().getWorld(cw);
+			if(world == null)
+				logger.warning("There is no world named: " + cw + ". Check your config.yml");
+			else
+				disabledWorlds.add(world);			
 		}
 		
 		outConfig.set(_worlds, configWorlds);
+		outConfig.set(_disabledWorlds, disWorlds);
 		
 		saveConfig(outConfig, configPath);		
 	}
@@ -98,7 +113,7 @@ public class SimpleSilkSpawners extends JavaPlugin implements Listener{
 		if(block.getType() != Material.MOB_SPAWNER || 
 				player.getGameMode() == GameMode.CREATIVE ||
 				!player.getInventory().getItemInMainHand().containsEnchantment(Enchantment.SILK_TOUCH) ||
-				!worlds.contains(event.getBlock().getWorld()) || 
+				!harvestWorlds.contains(event.getBlock().getWorld()) || 
 				!player.hasPermission("sss.break")){
 			return;
 		}
@@ -121,18 +136,25 @@ public class SimpleSilkSpawners extends JavaPlugin implements Listener{
 	@EventHandler(priority = EventPriority.LOWEST)
 	public void onPlace(BlockPlaceEvent event){
 		Block block = event.getBlock();
-		if(block.getType() == Material.MOB_SPAWNER){
-			String mob = "";
-			try{
-				mob = event.getItemInHand().getItemMeta().getLore().get(0);
-			}
-			catch(Exception e){
+		if(block.getType() == Material.MOB_SPAWNER)
+		{
+			if(disabledWorlds.contains(block.getWorld())){
 				event.setCancelled(true);
-				event.getPlayer().sendMessage(ChatColor.RED + "There is a problem with this spawner. Please contact staff.");
 				return;
 			}
-			if(!mob.isEmpty())
-				setSpawner(event.getBlock(), mob);
+			else{
+				String mob = "";
+				try{
+					mob = event.getItemInHand().getItemMeta().getLore().get(0);
+				}
+				catch(Exception e){
+					event.setCancelled(true);
+					event.getPlayer().sendMessage(ChatColor.RED + "There is a problem with this spawner. Please contact staff.");
+					return;
+				}
+				if(!mob.isEmpty())
+					setSpawner(event.getBlock(), mob);
+			}
 		}
 	}
 	
